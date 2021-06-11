@@ -49,6 +49,13 @@
 #define DELAY_MODE_DWELL       0
 #define DELAY_MODE_SYS_SUSPEND 1
 
+#ifdef SCARA
+  // upper motor -- moves the upper arm
+  #define U_MOTOR Y_AXIS
+  // lower motor -- moves the lower arm
+  #define L_MOTOR X_AXIS
+#endif
+
 // Useful macros
 #define clear_vector(a) memset(a, 0, sizeof(a))
 #define clear_vector_float(a) memset(a, 0.0, sizeof(float)*N_AXIS)

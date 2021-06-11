@@ -38,6 +38,16 @@ const __flash settings_t defaults = {\
     .homing_seek_rate = DEFAULT_HOMING_SEEK_RATE,
     .homing_debounce_delay = DEFAULT_HOMING_DEBOUNCE_DELAY,
     .homing_pulloff = DEFAULT_HOMING_PULLOFF,
+
+    #ifdef SCARA
+      .upper_arm = DEFAULT_UPPER_ARM,
+      .lower_arm = DEFAULT_LOWER_ARM,
+      .segmentation_tolerance = DEFAULT_SEGMENTATION_TOLERANCE,
+      .mm_per_segment = DEFAULT_MM_PER_SEGMENT,
+      .r_min_sq = DEFAULT_R_MIN,
+      .r_max_sq = DEFAULT_R_MAX,
+    #endif
+
     .flags = (DEFAULT_REPORT_INCHES << BIT_REPORT_INCHES) | \
              (DEFAULT_LASER_MODE << BIT_LASER_MODE) | \
              (DEFAULT_INVERT_ST_ENABLE << BIT_INVERT_ST_ENABLE) | \
@@ -294,6 +304,14 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
           return(STATUS_SETTING_DISABLED_LASER);
         #endif
         break;
+      case 50: settings.upper_arm = value; break;
+      case 51: settings.lower_arm = value; break;
+      case 52: settings.x_min = value; break;
+      case 53: settings.r_min_sq = value*value; break;
+      case 54: settings.r_max_sq = value*value; break;
+      case 55: settings.segmentation_tolerance = value; break;
+      case 56: settings.mm_per_segment = value; break;
+
       default:
         return(STATUS_INVALID_STATEMENT);
     }

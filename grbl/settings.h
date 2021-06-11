@@ -110,6 +110,17 @@ typedef struct {
   float homing_seek_rate;
   uint16_t homing_debounce_delay;
   float homing_pulloff;
+
+  #ifdef SCARA
+    float segmentation_tolerance;
+    float mm_per_segment;
+    float upper_arm; // Length of upper arm: measure from axle to axle
+    float lower_arm; // Length of forearm: measure from axle to toolhead
+    float x_min;
+    float r_min_sq;
+    float r_max_sq;
+  #endif
+
 } settings_t;
 extern settings_t settings;
 

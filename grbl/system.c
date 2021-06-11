@@ -300,12 +300,61 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
     } else {
       pos = steps[idx]/settings.steps_per_mm[idx];
     }
+  #elif defined SCARA
+    // forward kinematics
+    if (idx == X_AXIS) {
+      pos = cos(steps[L_MOTOR]/settings.steps_per_mm[L_MOTOR]) * settings.lower_arm
+        + cos(steps[U_MOTOR]/settings.steps_per_mm[U_MOTOR]) * settings.upper_arm;
+    } else if (idx == Y_AXIS) {
+      pos = sin(steps[L_MOTOR]/settings.steps_per_mm[L_MOTOR]) * settings.lower_arm
+        + sin(steps[U_MOTOR]/settings.steps_per_mm[U_MOTOR]) * settings.upper_arm;
+    } else {
+      pos = steps[idx]/settings.steps_per_mm[idx];
+    }
   #else
     pos = steps[idx]/settings.steps_per_mm[idx];
   #endif
   return(pos);
 }
 
+#ifdef SCARA
+// https://www.dsprelated.com/showarticle/1052.php
+float quick_atan2(float y, float x)
+{
+  const float n1 = 0.97239411f;
+  const float n2 = -0.19194795f;    
+  float result = 0.0f;
+  if (x != 0.0f) {
+    const union { float flVal; uint32_t nVal; } tYSign = { y };
+    const union { float flVal; uint32_t nVal; } tXSign = { x };
+    if (fabsf(x) >= fabsf(y)) {
+      union { float flVal; uint32_t nVal; } tOffset = { M_PI };
+      // Add or subtract PI based on y's sign.
+      tOffset.nVal |= tYSign.nVal & 0x80000000u;
+      // No offset if x is positive, so multiply by 0 or based on x's sign.
+      tOffset.nVal *= tXSign.nVal >> 31;
+      result = tOffset.flVal;
+      const float z = y / x;
+      result += (n1 + n2 * z * z) * z;
+    }
+    else { // Use atan(y/x) = pi/2 - atan(x/y) if |y/x| > 1.
+      union { float flVal; uint32_t nVal; } tOffset = { M_PI/2 };
+      // Add or subtract PI/2 based on y's sign.
+      tOffset.nVal |= tYSign.nVal & 0x80000000u;            
+      result = tOffset.flVal;
+      const float z = x / y;
+      result -= (n1 + n2 * z * z) * z;            
+    }
+  }
+  else if (y > 0.0f) {
+    result = M_PI/2;
+  }
+  else if (y < 0.0f) {
+    result = -M_PI/2;
+  }
+  return result;
+}
+#endif 
 
 void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
 {

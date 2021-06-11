@@ -21,7 +21,6 @@
 
 #include "grbl.h"
 
-
 // Execute linear motion in absolute millimeter coordinates. Feed rate given in millimeters/second
 // unless invert_feed_rate is true. Then the feed_rate means that the motion should be completed in
 // (1 minute)/feed_rate time.
@@ -76,6 +75,35 @@ void mc_line(float *target, plan_line_data_t *pl_data)
   }
 }
 
+//Segment straight lines to ensure linear movement when the coordinates system is changed
+#ifdef SCARA
+void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data)
+{
+  float mm_of_travel = hypot(target[X_AXIS] - position[X_AXIS],
+		  target[Y_AXIS] - position[Y_AXIS]);
+  if (mm_of_travel < settings.segmentation_tolerance)  return;
+  uint16_t segments = floor(mm_of_travel / settings.mm_per_segment);
+  if (segments) {
+      // // Multiply inverse feed_rate to compensate for the fact that this movement is approximated
+      // // by a number of discrete segments. The inverse feed_rate should be correct for the sum of
+      // // all segments.
+      // if (invert_feed_rate) { feed_rate *= segments; }
+
+      float linear_per_segmentX = (target[X_AXIS] - position[X_AXIS])/segments;
+      float linear_per_segmentY = (target[Y_AXIS] - position[Y_AXIS])/segments;
+
+      uint16_t i;
+	  for (i = 1; i<segments; i++) { // Increment (segments-1).
+		// Update arc_target location
+		position[X_AXIS] += linear_per_segmentX;
+		position[Y_AXIS] += linear_per_segmentY;
+    mc_line(position, pl_data);
+		// Bail mid-circle on system abort. Runtime command check already performed by mc_line.
+		if (sys.abort) { return; }
+	  }
+  }
+}
+#endif
 
 // Execute an arc in offset mode format. position == current xyz, target == target xyz,
 // offset == offset from current xyz, axis_X defines circle plane in tool space, axis_linear is
@@ -244,6 +272,10 @@ void mc_homing_cycle(uint8_t cycle_mask)
 
   // Sync gcode parser and planner positions to homed position.
   gc_sync_position();
+  // #ifdef SCARA
+  //   system_convert_mpos_to_array_steps(gc_state.position, settings.offset);
+  // #endif
+
   plan_sync_position();
 
   // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.

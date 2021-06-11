@@ -29,6 +29,14 @@
 #define config_h
 #include "grbl.h" // For Arduino IDE compatibility.
 
+/* If SCARA is enabled the coordinates of the machine movement are changed to scara.
+ * To activate this feature you must know the length of the two arms
+ */
+#define SCARA
+
+// Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
+//#define DEFAULTS_GENERIC
+#define DEFAULTS_SCARA
 
 // Define CPU pin map and default settings.
 // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only

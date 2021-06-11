@@ -201,13 +201,24 @@ void report_grbl_settings() {
   report_util_float_setting(25,settings.homing_seek_rate,N_DECIMAL_SETTINGVALUE);
   report_util_uint8_setting(26,settings.homing_debounce_delay);
   report_util_float_setting(27,settings.homing_pulloff,N_DECIMAL_SETTINGVALUE);
-  report_util_float_setting(30,settings.rpm_max,N_DECIMAL_RPMVALUE);
-  report_util_float_setting(31,settings.rpm_min,N_DECIMAL_RPMVALUE);
+
   #ifdef VARIABLE_SPINDLE
     report_util_uint8_setting(32,bit_istrue(settings.flags,BITFLAG_LASER_MODE));
   #else
     report_util_uint8_setting(32,0);
   #endif
+  
+  #ifdef SCARA 
+    report_util_float_setting(50,settings.upper_arm,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(51,settings.lower_arm,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(52,settings.x_min,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(53,settings.r_min_sq,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(54,settings.r_max_sq,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(55,settings.segmentation_tolerance,N_DECIMAL_SETTINGVALUE);
+    report_util_float_setting(56,settings.mm_per_segment,N_DECIMAL_SETTINGVALUE);
+  #endif
+  
+
   // Print axis settings
   uint8_t idx, set_idx;
   uint8_t val = AXIS_SETTINGS_START_VAL;

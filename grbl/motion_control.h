@@ -38,6 +38,11 @@
 // (1 minute)/feed_rate time.
 void mc_line(float *target, plan_line_data_t *pl_data);
 
+//Segment straight lines to ensure linear movement when the coordinates system is changed
+#ifdef SCARA
+void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data);
+#endif 
+
 // Execute an arc in offset mode format. position == current xyz, target == target xyz,
 // offset == offset from current xyz, axis_XXX defines circle plane in tool space, axis_linear is
 // the direction of helical travel, radius == circle radius, is_clockwise_arc boolean. Used
